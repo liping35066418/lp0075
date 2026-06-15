@@ -1,0 +1,125 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Orbitron:wght@400;500;600;700;800&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  @apply bg-space-950 text-white font-sans antialiased;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-glass-dark backdrop-blur-xl border border-white/10 rounded-2xl;
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  .btn-glass {
+    @apply px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
+      bg-white/5 border border-white/10 backdrop-blur-md
+      hover:bg-white/10 hover:border-white/20 hover:shadow-glow-soft
+      active:scale-95 active:bg-white/15
+      flex items-center justify-center gap-2 select-none;
+  }
+
+  .btn-primary {
+    @apply btn-glass text-neon-cyan border-neon-cyan/30 hover:border-neon-cyan/60 hover:shadow-neon-cyan;
+  }
+
+  .btn-warn {
+    @apply btn-glass text-neon-orange border-neon-orange/30 hover:border-neon-orange/60 hover:shadow-neon-orange;
+  }
+
+  .btn-danger {
+    @apply btn-glass text-neon-red border-neon-red/30 hover:border-neon-red/60;
+  }
+
+  .digit-display {
+    @apply font-orbitron tracking-wider tabular-nums;
+  }
+
+  .segmented-control {
+    @apply relative flex p-1 rounded-xl bg-space-900/80 border border-white/10;
+  }
+
+  .segmented-option {
+    @apply relative z-10 flex-1 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 text-white/50 hover:text-white/80 cursor-pointer select-none;
+  }
+
+  .segmented-option.active {
+    @apply text-neon-cyan;
+  }
+
+  .segmented-thumb {
+    @apply absolute top-1 bottom-1 rounded-lg bg-neon-cyan/15 border border-neon-cyan/40 transition-all duration-300 shadow-neon-cyan;
+  }
+
+  .ruler-track {
+    @apply relative h-2 rounded-full bg-space-800 border border-white/5 overflow-hidden;
+  }
+
+  .ruler-fill {
+    @apply absolute top-0 left-0 h-full rounded-full bg-gradient-to-r from-neon-cyan/70 to-neon-green transition-all duration-150;
+  }
+
+  .ruler-thumb {
+    @apply absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-neon-cyan border-2 border-white/90 shadow-neon-cyan cursor-grab active:cursor-grabbing transition-transform hover:scale-110;
+  }
+
+  .annotation-card {
+    @apply relative p-3 rounded-xl bg-space-900/70 border border-white/10 backdrop-blur-sm transition-all duration-200
+      hover:border-neon-cyan/30 hover:bg-space-900 cursor-pointer;
+  }
+
+  .annotation-card.selected {
+    @apply border-neon-cyan/60 bg-neon-cyan/5 shadow-neon-cyan;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-white/10 rounded-full;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    @apply bg-neon-cyan/40;
+  }
+
+  .text-shadow-neon {
+    text-shadow: 0 0 12px rgba(0, 245, 212, 0.6);
+  }
+
+  .grid-overlay-bg {
+    background-image:
+      linear-gradient(rgba(0, 245, 212, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 245, 212, 0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+}
+
+.measure-canvas {
+  touch-action: none;
+  cursor: crosshair;
+}
