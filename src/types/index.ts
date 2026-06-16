@@ -34,6 +34,7 @@ export interface AppState {
   isPanelExpanded: boolean;
   selectedMeasurementId: string | null;
   hoverPoint: { x: number; y: number } | null;
+  canvasSize: { width: number; height: number };
 }
 
 export interface MeasurementActions {
@@ -48,6 +49,7 @@ export interface MeasurementActions {
   togglePanel: () => void;
   selectMeasurement: (id: string | null) => void;
   setHoverPoint: (point: { x: number; y: number } | null) => void;
+  setCanvasSize: (size: { width: number; height: number }) => void;
 }
 
 export type MeasurementStore = AppState & MeasurementActions;

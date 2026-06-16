@@ -6,6 +6,7 @@ import type {
   MeasurementStore,
   MeasurePoint,
 } from "@/types";
+import { calcPixelDistance, calcRealDistanceCm } from "@/utils/distanceCalc";
 
 const initialState: AppState = {
   cameraStatus: "idle",
@@ -20,6 +21,7 @@ const initialState: AppState = {
   isPanelExpanded: true,
   selectedMeasurementId: null,
   hoverPoint: null,
+  canvasSize: { width: 0, height: 0 },
 };
 
 const recalcDistances = (
@@ -28,7 +30,7 @@ const recalcDistances = (
 ): Measurement[] =>
   measurements.map((m) => ({
     ...m,
-    realDistanceCm: m.pixelDistance / pixelsPerCm,
+    realDistanceCm: calcRealDistanceCm(m.pixelDistance, pixelsPerCm),
   }));
 
 export const useMeasurementStore = create<MeasurementStore>(
@@ -39,23 +41,31 @@ export const useMeasurementStore = create<MeasurementStore>(
       set({ cameraStatus: status, cameraError: error }),
 
     addPendingPoint: (point: MeasurePoint) => {
-      const { pendingPoint, scaleConfig } = get();
+      const { pendingPoint, scaleConfig, canvasSize } = get();
 
       if (!pendingPoint) {
         set({ pendingPoint: point });
         return;
       }
 
-      const dx = (point.x - pendingPoint.x) * window.innerWidth;
-      const dy = (point.y - pendingPoint.y) * window.innerHeight;
-      const pixelDistance = Math.sqrt(dx * dx + dy * dy);
+      if (canvasSize.width <= 0 || canvasSize.height <= 0) {
+        set({ pendingPoint: null });
+        return;
+      }
+
+      const pixelDistance = calcPixelDistance(
+        pendingPoint,
+        point,
+        canvasSize.width,
+        canvasSize.height,
+      );
 
       const measurement: Measurement = {
         id: `m_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
         pointA: pendingPoint,
         pointB: point,
         pixelDistance,
-        realDistanceCm: pixelDistance / scaleConfig.pixelsPerCm,
+        realDistanceCm: calcRealDistanceCm(pixelDistance, scaleConfig.pixelsPerCm),
         createdAt: Date.now(),
       };
 
@@ -106,16 +116,20 @@ export const useMeasurementStore = create<MeasurementStore>(
     selectMeasurement: (id) => set({ selectedMeasurementId: id }),
 
     setHoverPoint: (point) => set({ hoverPoint: point }),
+
+    setCanvasSize: (size) => set({ canvasSize: size }),
   }),
 );
 
 export const formatDistance = (cm: number, unit: "cm" | "m"): string => {
+  const minDisplayCm = 0.1;
+  const displayCm = Math.max(cm, minDisplayCm);
   if (unit === "m") {
-    const m = cm / 100;
+    const m = displayCm / 100;
     return `${m.toFixed(2)} m`;
   }
-  if (cm >= 100) {
-    return `${(cm / 100).toFixed(2)} m`;
+  if (displayCm >= 100) {
+    return `${(displayCm / 100).toFixed(2)} m`;
   }
-  return `${cm.toFixed(1)} cm`;
+  return `${displayCm.toFixed(1)} cm`;
 };

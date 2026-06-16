@@ -27,6 +27,7 @@ export const MeasurementCanvas = () => {
     cameraStatus,
     addPendingPoint,
     setHoverPoint,
+    setCanvasSize,
   } = useMeasurementStore();
 
   const selectedId = selectedMeasurementId;
@@ -39,8 +40,9 @@ export const MeasurementCanvas = () => {
     const w = parent.clientWidth;
     const h = parent.clientHeight;
     sizeRef.current = { w, h };
+    setCanvasSize({ width: w, height: h });
     setupHiDPICanvas(canvas, w, h);
-  }, []);
+  }, [setCanvasSize]);
 
   useEffect(() => {
     resize();
