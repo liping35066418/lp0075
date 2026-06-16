@@ -18,6 +18,7 @@ export default {
           green: "#00FF94",
           orange: "#FF6B35",
           red: "#FF4757",
+          purple: "#B794F4",
         },
       },
       fontFamily: {

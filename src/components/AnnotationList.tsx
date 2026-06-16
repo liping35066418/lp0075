@@ -1,5 +1,6 @@
+import { useState, useRef, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ListOrdered, Trash2, ArrowRightLeft, MapPin } from "lucide-react";
+import { ListOrdered, Trash2, ArrowRightLeft, MapPin, Pencil, Check, X } from "lucide-react";
 import { useMeasurementStore, formatDistance } from "@/store/measurementStore";
 
 export const AnnotationList = () => {
@@ -10,7 +11,46 @@ export const AnnotationList = () => {
     selectMeasurement,
     removeMeasurement,
     scaleConfig,
+    setMeasurementLabel,
   } = useMeasurementStore();
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingValue, setEditingValue] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editingId && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [editingId]);
+
+  const startEdit = (id: string, currentLabel?: string) => {
+    setEditingId(id);
+    setEditingValue(currentLabel || "");
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditingValue("");
+  };
+
+  const commitEdit = () => {
+    if (editingId) {
+      setMeasurementLabel(editingId, editingValue);
+    }
+    cancelEdit();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      commitEdit();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      cancelEdit();
+    }
+  };
 
   return (
     <div className="flex flex-col gap-3">
@@ -45,6 +85,7 @@ export const AnnotationList = () => {
             {measurements.map((m, idx) => {
               const isSelected = selectedMeasurementId === m.id;
               const value = formatDistance(m.realDistanceCm, currentUnit);
+              const isEditing = editingId === m.id;
               return (
                 <motion.div
                   key={m.id}
@@ -53,7 +94,7 @@ export const AnnotationList = () => {
                   animate={{ opacity: 1, x: 0, scale: 1 }}
                   exit={{ opacity: 0, x: 12, scale: 0.95, height: 0 }}
                   transition={{ duration: 0.25, ease: "easeOut" }}
-                  onClick={() => selectMeasurement(isSelected ? null : m.id)}
+                  onClick={() => !isEditing && selectMeasurement(isSelected ? null : m.id)}
                   className={`annotation-card group ${isSelected ? "selected" : ""}`}
                 >
                   <div className="flex items-center gap-3">
@@ -75,30 +116,94 @@ export const AnnotationList = () => {
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-xs text-white/50">
-                          测量 #{String(idx + 1).padStart(2, "0")}
-                        </span>
-                        {isSelected && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-neon-cyan/15 text-neon-cyan border border-neon-cyan/30">
-                            已选中
+                      {isEditing ? (
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            ref={inputRef}
+                            value={editingValue}
+                            onChange={(e) => setEditingValue(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            onBlur={commitEdit}
+                            onClick={(e) => e.stopPropagation()}
+                            placeholder="输入名称，如：桌宽"
+                            className="flex-1 min-w-0 px-2 py-1 rounded-lg bg-white/5 border border-neon-cyan/40 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-neon-cyan focus:ring-1 focus:ring-neon-cyan/40"
+                            maxLength={20}
+                          />
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              commitEdit();
+                            }}
+                            className="w-7 h-7 rounded-lg bg-neon-cyan/15 border border-neon-cyan/40 flex items-center justify-center text-neon-cyan hover:bg-neon-cyan/25 transition-all shrink-0"
+                            title="确定"
+                          >
+                            <Check className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              cancelEdit();
+                            }}
+                            className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/60 hover:bg-white/10 transition-all shrink-0"
+                            title="取消"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 mb-0.5 pr-1">
+                          <span
+                            className={`text-xs truncate ${
+                              isSelected ? "text-neon-cyan/80" : "text-white/50"
+                            }`}
+                          >
+                            测量 #{String(idx + 1).padStart(2, "0")}
                           </span>
-                        )}
-                      </div>
-                      <div className="flex items-baseline gap-2">
-                        <span
-                          className={`digit-display text-lg font-bold ${
-                            isSelected
-                              ? "text-neon-cyan text-shadow-neon"
-                              : "text-white"
-                          }`}
-                        >
-                          {value}
-                        </span>
-                        <span className="text-[10px] text-white/35">
-                          像素 {m.pixelDistance.toFixed(0)} px
-                        </span>
-                      </div>
+                          {m.label && (
+                            <span
+                              className={`text-xs font-semibold truncate ${
+                                isSelected ? "text-neon-cyan" : "text-white/85"
+                              }`}
+                              title={m.label}
+                            >
+                              · {m.label}
+                            </span>
+                          )}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              startEdit(m.id, m.label);
+                            }}
+                            className="ml-auto shrink-0 w-6 h-6 rounded-md bg-white/[0.03] border border-white/[0.07] flex items-center justify-center text-white/35 hover:text-neon-cyan hover:border-neon-cyan/30 hover:bg-neon-cyan/10 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all"
+                            title="编辑名称"
+                          >
+                            <Pencil className="w-3 h-3" />
+                          </button>
+                        </div>
+                      )}
+                      {!isEditing && (
+                        <div className="flex items-baseline gap-2">
+                          <span
+                            className={`digit-display text-lg font-bold ${
+                              isSelected
+                                ? "text-neon-cyan text-shadow-neon"
+                                : "text-white"
+                            }`}
+                          >
+                            {m.label ? `${m.label}  ${value}` : value}
+                          </span>
+                          <span className="text-[10px] text-white/35">
+                            像素 {m.pixelDistance.toFixed(0)} px
+                          </span>
+                        </div>
+                      )}
+                      {isSelected && !isEditing && (
+                        <div className="mt-1">
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-neon-cyan/15 text-neon-cyan border border-neon-cyan/30">
+                            已选中 · 再次点击取消聚焦
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     <button

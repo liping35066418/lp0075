@@ -215,6 +215,7 @@ export const drawDistanceLabel = (
   x: number,
   y: number,
   selected: boolean,
+  dimmed = false,
 ) => {
   const padding = { x: 12, y: 7 };
   ctx.save();
@@ -239,19 +240,26 @@ export const drawDistanceLabel = (
   ctx.quadraticCurveTo(bgX, bgY, bgX + r, bgY);
   ctx.closePath();
 
-  ctx.fillStyle = selected ? "rgba(0, 245, 212, 0.18)" : "rgba(10, 14, 26, 0.78)";
+  const labelAlpha = dimmed ? 0.45 : 1;
+  ctx.fillStyle = selected
+    ? `rgba(0, 245, 212, ${0.18 * labelAlpha})`
+    : `rgba(10, 14, 26, ${0.78 * labelAlpha})`;
   ctx.fill();
   ctx.lineWidth = 1.5;
-  ctx.strokeStyle = selected ? "rgba(0, 245, 212, 0.85)" : "rgba(0, 245, 212, 0.35)";
+  ctx.strokeStyle = selected
+    ? hexToRgba("#00F5D4", dimmed ? 0.6 : 0.85)
+    : `rgba(0, 245, 212, ${(dimmed ? 0.2 : 0.35)})`;
   ctx.stroke();
   if (selected) {
     ctx.shadowColor = "#00F5D4";
-    ctx.shadowBlur = 18;
+    ctx.shadowBlur = dimmed ? 6 : 18;
     ctx.stroke();
     ctx.shadowBlur = 0;
   }
 
-  ctx.fillStyle = selected ? "#00F5D4" : "#FFFFFF";
+  ctx.fillStyle = selected
+    ? hexToRgba("#00F5D4", dimmed ? 0.6 : 1)
+    : `rgba(255, 255, 255, ${dimmed ? 0.55 : 1})`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(text, x, y + 1);
@@ -266,27 +274,41 @@ export const drawMeasurement = (
   formattedValue: string,
   selected: boolean,
   animationProgress = 1,
+  dimmed = false,
 ) => {
   const ax = m.pointA.x * width;
   const ay = m.pointA.y * height;
   const bx = m.pointB.x * width;
   const by = m.pointB.y * height;
 
-  const color = selected ? "#00F5D4" : "#00F5D4";
+  const alpha = dimmed ? 0.3 : 1;
+  const lineColor = selected
+    ? "#00F5D4"
+    : hexToRgba("#00F5D4", alpha);
+  const pointColor = selected
+    ? "#00FF94"
+    : hexToRgba("#00FF94", alpha);
+
   drawMeasureLine(ctx, ax, ay, bx, by, {
-    color,
+    color: lineColor,
     animated: animationProgress < 1,
     progress: animationProgress,
   });
 
-  drawMeasurePoint(ctx, ax, ay, { color: selected ? "#00FF94" : "#00FF94" });
-  drawMeasurePoint(ctx, bx, by, { color: selected ? "#00FF94" : "#00FF94" });
+  drawMeasurePoint(ctx, ax, ay, {
+    color: pointColor,
+    pulse: selected || !dimmed,
+  });
+  drawMeasurePoint(ctx, bx, by, {
+    color: pointColor,
+    pulse: selected || !dimmed,
+  });
 
   if (animationProgress >= 0.6) {
     const mid = getMidpoint(m.pointA, m.pointB);
     const mx = mid.x * width;
     const my = mid.y * height - 38;
-    drawDistanceLabel(ctx, formattedValue, mx, my, selected);
+    drawDistanceLabel(ctx, formattedValue, mx, my, selected, dimmed);
   }
 };
 

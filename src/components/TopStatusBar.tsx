@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Eye, Ruler, Sparkles } from "lucide-react";
+import { Eye, Ruler, Sparkles, Sigma, BarChart3 } from "lucide-react";
 import { useMeasurementStore, formatDistance } from "@/store/measurementStore";
 
 export const TopStatusBar = () => {
@@ -10,6 +10,8 @@ export const TopStatusBar = () => {
     (sum, m) => sum + m.realDistanceCm,
     0,
   );
+  const averageDistanceCm =
+    measurements.length > 0 ? totalDistanceCm / measurements.length : 0;
 
   return (
     <motion.header
@@ -58,12 +60,22 @@ export const TopStatusBar = () => {
             </div>
 
             {measurements.length > 0 && (
-              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-neon-cyan/10 border border-neon-cyan/30">
-                <div className="text-xs text-neon-cyan/80">累计总长</div>
-                <div className="digit-display text-white text-sm font-bold text-shadow-neon">
-                  {formatDistance(totalDistanceCm, currentUnit)}
+              <>
+                <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-neon-cyan/10 border border-neon-cyan/30">
+                  <Sigma className="w-3.5 h-3.5 text-neon-cyan/90" />
+                  <div className="text-xs text-neon-cyan/80">累计总长</div>
+                  <div className="digit-display text-white text-sm font-bold text-shadow-neon">
+                    {formatDistance(totalDistanceCm, currentUnit)}
+                  </div>
                 </div>
-              </div>
+                <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-neon-purple/10 border border-neon-purple/35">
+                  <BarChart3 className="w-3.5 h-3.5 text-neon-purple/90" />
+                  <div className="text-xs text-neon-purple/80">平均长度</div>
+                  <div className="digit-display text-white text-sm font-bold">
+                    {formatDistance(averageDistanceCm, currentUnit)}
+                  </div>
+                </div>
+              </>
             )}
 
             {pendingPoint && (

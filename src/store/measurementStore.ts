@@ -118,6 +118,13 @@ export const useMeasurementStore = create<MeasurementStore>(
     setHoverPoint: (point) => set({ hoverPoint: point }),
 
     setCanvasSize: (size) => set({ canvasSize: size }),
+
+    setMeasurementLabel: (id, label) =>
+      set((state) => ({
+        measurements: state.measurements.map((m) =>
+          m.id === id ? { ...m, label: label.trim() || undefined } : m,
+        ),
+      })),
   }),
 );
 

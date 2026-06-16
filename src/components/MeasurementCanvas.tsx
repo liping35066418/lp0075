@@ -123,6 +123,7 @@ export const MeasurementCanvas = () => {
     );
 
     const now = Date.now();
+    const hasSelection = selectedId !== null;
 
     measurements.forEach((m) => {
       if (!animStartRef.current[m.id]) {
@@ -133,8 +134,10 @@ export const MeasurementCanvas = () => {
       const progress = Math.min(1, elapsed / 500);
       const eased = 1 - Math.pow(1 - progress, 3);
       const formatted = formatDistance(m.realDistanceCm, currentUnit);
+      const labelText = m.label ? `${m.label}  ${formatted}` : formatted;
       const selected = selectedId === m.id;
-      drawMeasurement(ctx, m, w, h, formatted, selected, eased);
+      const dimmed = hasSelection && !selected;
+      drawMeasurement(ctx, m, w, h, labelText, selected, eased, dimmed);
     });
 
     if (pendingPoint) {

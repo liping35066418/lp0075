@@ -50,6 +50,7 @@ export interface MeasurementActions {
   selectMeasurement: (id: string | null) => void;
   setHoverPoint: (point: { x: number; y: number } | null) => void;
   setCanvasSize: (size: { width: number; height: number }) => void;
+  setMeasurementLabel: (id: string, label: string) => void;
 }
 
 export type MeasurementStore = AppState & MeasurementActions;
